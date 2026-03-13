@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ResuAI Pro v3 — PCAM Intelligence Platform</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f5f3ee;--bg2:#eceae3;--bg3:#e2dfd6;--surface:#ffffff;
+      --border:#d8d4c8;--border2:#c4bfb0;
+      --text:#1c1916;--text2:#46413b;--text3:#8a8278;
+      --green:#2a6049;--green2:#3d8a68;--green3:#d4ede2;
+      --amber:#b5431a;--amber2:#e0795e;
+      --blue:#1f4e79;--blue2:#2980b9;--blue3:#d6eaf8;
+      --yellow:#b8860b;--red:#c0111e;
+      --shadow:rgba(28,25,22,0.06);--shadow2:rgba(28,25,22,0.12);
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+    #root{max-width:1480px;margin:0 auto;}
+
+    /* NAV */
+    nav{display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;box-shadow:0 1px 0 var(--border);}
+    .logo{font-family:'Fraunces',serif;font-size:20px;font-weight:700;letter-spacing:-0.5px;}
+    .logo em{color:var(--green);font-style:italic;}
+    .logo-sub{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:2px;}
+    .nav-chips{display:flex;gap:6px;flex-wrap:wrap;}
+    .chip{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:100px;border:1px solid var(--border2);color:var(--text3);background:var(--bg2);}
+    .chip.green{border-color:rgba(42,96,73,0.3);color:var(--green);background:rgba(42,96,73,0.07);}
+    .chip.pulse::before{content:'';display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--green2);margin-right:5px;animation:blink 2s infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+    /* WORKSPACE */
+    .workspace{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 53px);}
+    @media(max-width:900px){.workspace{grid-template-columns:1fr;}}
+
+    /* LEFT PANEL */
+    .left{background:var(--surface);border-right:1px solid var(--border);padding:24px 20px;display:flex;flex-direction:column;gap:18px;position:sticky;top:53px;height:calc(100vh - 53px);overflow-y:auto;}
+    .sec-label{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+    .sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
+    .upload-zone{border:1.5px dashed var(--border2);border-radius:10px;padding:20px 14px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--bg);}
+    .upload-zone:hover,.upload-zone.drag{border-color:var(--green2);background:rgba(42,96,73,0.04);}
+    .upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;}
+    .upload-txt{font-size:12px;color:var(--text3);line-height:1.6;}
+    .upload-txt strong{color:var(--green);}
+    .file-ok{display:flex;align-items:center;gap:7px;background:rgba(42,96,73,0.06);border:1px solid rgba(42,96,73,0.2);border-radius:7px;padding:7px 11px;margin-top:7px;}
+    .file-ok-name{font-size:11px;color:var(--green);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .rm-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;line-height:1;}
+    .rm-btn:hover{color:var(--red);}
+    .or-div{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1px;color:var(--text3);}
+    .or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--border);}
+    textarea,input[type=text],input[type=password]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--text);resize:vertical;outline:none;transition:border-color .2s,box-shadow .2s;line-height:1.6;}
+    textarea:focus,input:focus{border-color:var(--green2);box-shadow:0 0 0 3px rgba(42,96,73,0.09);background:var(--surface);}
+    textarea::placeholder,input::placeholder{color:var(--text3);}
+    .field-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:5px;}
+    .api-wrap{position:relative;}
+    .api-wrap input{padding-right:56px;font-family:'JetBrains Mono',monospace;font-size:10px;}
+    .api-tog{position:absolute;right:9px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;padding:3px;}
+    .api-tog:hover{color:var(--green);}
+    .api-hint{font-size:10px;color:var(--text3);margin-top:4px;}
+    .api-hint a{color:var(--green2);text-decoration:none;}
+    .run-btn{width:100%;padding:12px;background:var(--text);border:none;border-radius:8px;font-family:'Fraunces',serif;font-weight:700;font-size:14px;letter-spacing:-.3px;color:#fff;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;}
+    .run-btn:hover:not(:disabled){background:var(--green);transform:translateY(-1px);box-shadow:0 6px 18px rgba(42,96,73,0.22);}
+    .run-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+    .err{background:rgba(192,17,30,0.06);border:1px solid rgba(192,17,30,0.2);border-radius:8px;padding:9px 13px;font-size:12px;color:var(--red);line-height:1.6;}
+
+    /* PCAM PIPELINE WIDGET */
+    .pipeline-widget{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;}
+    .pw-title{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+    .pw-nodes{display:flex;flex-direction:column;gap:0;}
+    .pw-node{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);}
+    .pw-node:last-child{border-bottom:none;}
+    .pw-icon{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:500;flex-shrink:0;border:1px solid var(--border2);background:var(--surface);color:var(--text3);transition:all .3s;}
+    .pw-icon.active{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 0 0 3px rgba(42,96,73,0.14);}
+    .pw-icon.done{background:rgba(42,96,73,0.1);color:var(--green);border-color:rgba(42,96,73,0.25);}
+    .pw-icon.spin{animation:spin .8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .pw-info{flex:1;}
+    .pw-name{font-size:11px;font-weight:600;color:var(--text);}
+    .pw-desc{font-size:10px;color:var(--text3);margin-top:1px;}
+    .pw-status{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:100px;}
+    .s-idle{background:var(--bg3);color:var(--text3);}
+    .s-run{background:rgba(42,96,73,0.1);color:var(--green);}
+    .s-done{background:rgba(42,96,73,0.08);color:var(--green2);}
+
+    /* RIGHT PANEL */
+    .right{padding:24px 28px;background:var(--bg);}
+
+    /* WELCOME */
+    .welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:480px;padding:40px;}
+    .welcome-glyph{font-family:'Fraunces',serif;font-size:72px;font-weight:300;color:var(--border2);line-height:1;margin-bottom:20px;}
+    .welcome-h{font-family:'Fraunces',serif;font-size:24px;font-weight:600;color:var(--text2);margin-bottom:8px;letter-spacing:-.5px;}
+    .welcome-p{font-size:13px;color:var(--text3);max-width:380px;line-height:1.7;}
+    .welcome-steps{display:flex;gap:16px;margin-top:28px;flex-wrap:wrap;justify-content:center;}
+    .ws{display:flex;flex-direction:column;align-items:center;gap:7px;max-width:100px;}
+    .ws-num{width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:13px;font-weight:700;color:var(--text2);}
+    .ws-txt{font-size:10px;color:var(--text3);text-align:center;line-height:1.5;}
+
+    /* LOADING */
+    .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:480px;gap:20px;}
+    .loading-ring{width:52px;height:52px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--green);animation:spin 1s linear infinite;}
+    .loading-h{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:var(--text);letter-spacing:-.3px;}
+    .loading-sub{font-size:12px;color:var(--text3);}
+    .phases{display:flex;flex-direction:column;gap:7px;margin-top:6px;}
+    .phase-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);}
+    .pdot{width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background .3s;}
+    .pdot.active{background:var(--green);box-shadow:0 0 0 3px rgba(42,96,73,.13);}
+    .pdot.done{background:var(--green2);}
+
+    /* PCAM STATS BANNER */
+    .pcam-banner{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+    .pcam-stat{text-align:center;}
+    .pcam-stat-val{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--green);line-height:1;}
+    .pcam-stat-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:3px;}
+    .pcam-divider{width:1px;height:32px;background:var(--border);}
+    .pcam-chips{display:flex;flex-wrap:wrap;gap:4px;flex:1;}
+    .pcam-chip{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;border-radius:100px;background:rgba(42,96,73,0.07);color:var(--green);border:1px solid rgba(42,96,73,0.2);}
+
+    /* SCORE GRID */
+    .score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+    @media(max-width:700px){.score-grid{grid-template-columns:repeat(2,1fr);}}
+    .score-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;transition:box-shadow .2s;}
+    .score-card:hover{box-shadow:0 4px 14px var(--shadow);}
+    .score-val{font-family:'Fraunces',serif;font-size:38px;font-weight:700;line-height:1;letter-spacing:-1px;margin-bottom:4px;}
+    .sv-high{color:var(--green);}
+    .sv-mid{color:var(--yellow);}
+    .sv-low{color:var(--red);}
+    .score-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);line-height:1.4;}
+    .score-algo{font-size:10px;color:var(--text3);margin-top:3px;}
+
+    /* TABS */
+    .tab-row{display:flex;gap:2px;background:var(--bg2);border-radius:9px;padding:3px;margin-bottom:18px;overflow-x:auto;}
+    .tab-btn{flex:1;padding:7px 12px;border-radius:7px;border:none;background:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:500;color:var(--text3);transition:all .2s;white-space:nowrap;}
+    .tab-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px var(--shadow);}
+    .tab-btn:hover:not(.active){color:var(--text2);background:rgba(255,255,255,.5);}
+
+    /* CARD */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+    .card-head{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;}
+    .card-ico{width:28px;height:28px;border-radius:6px;background:var(--bg2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+    .card-title{font-size:12px;font-weight:700;color:var(--text);}
+    .card-body{padding:16px 18px;}
+    .info-box{background:rgba(42,96,73,0.05);border:1px solid rgba(42,96,73,0.15);border-radius:7px;padding:9px 12px;font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:14px;}
+    .sec-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+    .sec-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
+
+    /* HEATMAP — full resume document view */
+    .hm-layout{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start;}
+    @media(max-width:820px){.hm-layout{grid-template-columns:1fr;}}
+
+    /* legend panel */
+    .hm-legend{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;position:sticky;top:10px;}
+    .hm-legend-title{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;}
+    .hm-legend-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+    .hm-legend-row:last-of-type{border-bottom:none;}
+    .hm-legend-chip{width:14px;height:14px;border-radius:4px;flex-shrink:0;}
+    .hm-legend-info{flex:1;}
+    .hm-legend-label{font-size:12px;font-weight:600;color:var(--text);}
+    .hm-legend-range{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);}
+    .hm-legend-desc{font-size:10px;color:var(--text2);margin-top:1px;line-height:1.4;}
+    .hm-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
+    .hm-stat-box{background:var(--bg2);border-radius:6px;padding:8px;text-align:center;}
+    .hm-stat-num{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;}
+    .hm-stat-lbl{font-size:9px;color:var(--text3);margin-top:1px;}
+    .hm-score-bar{height:6px;border-radius:3px;background:var(--border);margin-top:10px;overflow:hidden;}
+    .hm-score-fill{height:100%;border-radius:3px;transition:width .4s ease;}
+    .hm-attn-note{font-size:9px;color:var(--text3);line-height:1.5;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+
+    /* resume document */
+    .hm-doc{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+    .hm-doc-header{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:space-between;}
+    .hm-doc-title{font-size:12px;font-weight:700;color:var(--text);}
+    .hm-doc-sub{font-size:10px;color:var(--text3);}
+    .hm-filter-row{display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg);}
+    .hm-filter-btn{font-size:10px;padding:4px 11px;border-radius:100px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s;font-family:'Plus Jakarta Sans',sans-serif;}
+    .hm-filter-btn.active{border-color:transparent;color:#fff;font-weight:600;}
+    .hm-resume-body{padding:14px 16px;display:flex;flex-direction:column;gap:3px;}
+
+    /* each line in the resume */
+    .hm-line{border-radius:7px;overflow:hidden;cursor:pointer;transition:all .15s;border:1.5px solid transparent;}
+    .hm-line:hover{border-color:rgba(0,0,0,0.12);box-shadow:0 2px 8px rgba(0,0,0,.06);}
+    .hm-line.expanded{border-color:rgba(0,0,0,0.18);box-shadow:0 3px 12px rgba(0,0,0,.09);}
+    .hm-line-main{display:flex;align-items:stretch;min-height:34px;}
+    .hm-line-gutter{width:5px;flex-shrink:0;border-radius:0;}
+    .hm-line-score-col{width:48px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-right:1px solid rgba(0,0,0,0.05);}
+    .hm-line-score-num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;}
+    .hm-line-body{flex:1;padding:7px 12px;display:flex;flex-direction:column;justify-content:center;gap:3px;}
+    .hm-line-text{font-size:12px;color:var(--text);line-height:1.55;}
+    .hm-line-chips{display:flex;flex-wrap:wrap;gap:3px;}
+    .hm-chip{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 6px;border-radius:100px;letter-spacing:.3px;}
+    .hm-chip-eff{font-size:9px;padding:2px 7px;font-weight:600;}
+    .hm-line-right{width:38px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text3);}
+
+    /* expanded detail panel */
+    .hm-detail{padding:12px 14px;border-top:1px solid rgba(0,0,0,0.07);background:rgba(0,0,0,0.015);}
+    .hm-detail-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px;}
+    .hm-dim-card{border-radius:6px;padding:6px 8px;text-align:center;}
+    .hm-dim-name{font-size:8px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;}
+    .hm-dim-val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;margin:2px 0;}
+    .hm-dim-bar{height:4px;border-radius:2px;background:rgba(0,0,0,0.08);margin-top:3px;}
+    .hm-dim-fill{height:100%;border-radius:2px;}
+    .hm-detail-row{display:flex;gap:8px;margin-bottom:6px;font-size:10px;color:var(--text2);align-items:center;}
+    .hm-cl-warn{color:var(--amber);font-size:10px;margin-top:2px;}
+    .hm-attn-vis{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+    .hm-attn-bar{flex:1;height:8px;border-radius:4px;background:var(--border);overflow:hidden;}
+    .hm-attn-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#1f4e79,#2980b9);}
+    .rewrite-block{margin-top:10px;padding:10px 12px;border-radius:7px;}
+    .rw-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;}
+    .rw-txt{font-size:12px;line-height:1.65;font-style:italic;}
+
+    /* section separators inside resume */
+    .hm-section-sep{padding:10px 14px 4px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;gap:8px;}
+    .hm-section-sep::after{content:'';flex:1;height:1px;background:var(--border);}
+    .hm-empty{text-align:center;padding:30px;color:var(--text3);font-size:12px;}
+
+    /* SKILLS */
+    .skill-list{display:flex;flex-direction:column;gap:5px;}
+    .skill-row{display:grid;grid-template-columns:150px 1fr 48px 75px 70px;align-items:center;gap:10px;padding:8px 11px;border-radius:7px;background:var(--surface);border:1px solid var(--border);}
+    .skill-name{font-size:11.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .skill-bar{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden;}
+    .skill-fill{height:100%;border-radius:3px;transition:width 1.2s ease;}
+    .skill-pct{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);text-align:right;}
+    .t-pill{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 6px;border-radius:100px;text-align:center;}
+    .t-rg{background:rgba(42,96,73,0.1);color:var(--green);}
+    .t-g{background:rgba(41,128,185,0.1);color:var(--blue2);}
+    .t-s{background:var(--bg3);color:var(--text3);}
+    .t-d{background:rgba(184,134,11,0.1);color:var(--yellow);}
+    .t-o{background:rgba(192,17,30,0.08);color:var(--red);}
+    .hub-badge{font-family:'JetBrains Mono',monospace;font-size:8px;padding:1px 5px;border-radius:3px;background:rgba(31,78,121,0.08);color:var(--blue);border:1px solid rgba(31,78,121,0.18);}
+    .decay-warn{font-size:9px;color:var(--amber);font-style:italic;}
+
+    /* ECO + PORTFOLIO BOXES */
+    .eco-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+    @media(max-width:600px){.eco-grid{grid-template-columns:1fr;}}
+    .eco-box{padding:11px 13px;border-radius:8px;background:var(--surface);border:1px solid var(--border);}
+    .eco-box-title{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
+    .eco-list{display:flex;flex-direction:column;gap:3px;}
+    .eco-item{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:5px;}
+    .eco-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+    .portfolio-box{padding:13px;border-radius:8px;background:var(--surface);border:1px solid var(--border);margin-top:12px;}
+    .pf-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+    .pf-lbl{font-size:11px;color:var(--text2);}
+    .pf-val{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);}
+
+    /* ATS */
+    .ats-big{font-family:'Fraunces',serif;font-size:64px;font-weight:700;line-height:1;letter-spacing:-2px;}
+    .ats-ci{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-top:3px;letter-spacing:.5px;}
+    .ats-rec{margin-top:10px;font-size:12px;color:var(--text2);padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:7px;line-height:1.6;}
+    .adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0;}
+    @media(max-width:600px){.adv-grid{grid-template-columns:1fr;}}
+    .adv-box{padding:12px;border-radius:8px;background:var(--bg);border:1px solid var(--border);}
+    .adv-box-title{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+    .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+    .bar-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);width:78px;flex-shrink:0;text-transform:capitalize;}
+    .bar-track{flex:1;height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;}
+    .bar-fill{height:100%;border-radius:3px;}
+    .bar-val{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);width:26px;text-align:right;}
+    .kw-row{display:flex;align-items:center;gap:7px;padding:6px 9px;border-radius:6px;background:var(--bg);border:1px solid var(--border);margin-bottom:4px;}
+    .kw-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+    .kw-txt{font-size:11px;flex:1;}
+    .kw-meta{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3);}
+    .miss-pill{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 8px;border-radius:100px;background:rgba(192,17,30,0.06);color:var(--red);border:1px solid rgba(192,17,30,0.18);}
+    .pill-wrap{display:flex;flex-wrap:wrap;gap:4px;}
+    .issue-row{padding:6px 10px;border-radius:6px;background:rgba(184,134,11,0.05);border:1px solid rgba(184,134,11,0.18);font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:4px;}
+    .game-box{padding:12px;border-radius:8px;background:rgba(31,78,121,0.04);border:1px solid rgba(31,78,121,0.15);margin-top:12px;}
+    .game-title{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:6px;}
+    .game-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px;}
+    .game-rec{font-size:11px;color:var(--blue2);margin-top:6px;line-height:1.5;}
+
+    /* CAREER */
+    .curr-box{padding:13px 15px;border-radius:9px;background:var(--surface);border:1px solid var(--border);margin-bottom:14px;}
+    .curr-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:3px;}
+    .curr-role{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--text);letter-spacing:-.3px;}
+    .curr-val{font-size:11px;color:var(--text3);margin-top:2px;}
+    .path-card{border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:10px;background:var(--surface);}
+    .path-head{padding:11px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:1px solid var(--border);background:var(--bg);}
+    .path-head:hover{background:var(--bg2);}
+    .path-name{font-size:13px;font-weight:600;}
+    .path-badges{display:flex;align-items:center;gap:5px;margin-top:2px;}
+    .pt-pill{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1px;padding:2px 7px;border-radius:100px;}
+    .pt-v{background:rgba(42,96,73,0.1);color:var(--green);}
+    .pt-l{background:rgba(41,128,185,0.1);color:var(--blue2);}
+    .pt-p{background:rgba(184,134,11,0.1);color:var(--yellow);}
+    .path-prob{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);}
+    .path-body{padding:13px 15px;}
+    .tl-grid{display:grid;grid-template-columns:76px 1fr 1fr;gap:7px;margin-bottom:10px;}
+    .tl-yr{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--green);letter-spacing:.5px;padding-top:2px;}
+    .tl-role{font-size:11.5px;font-weight:500;}
+    .tl-sal{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);}
+    .acq-wrap{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+    .acq-pill{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 8px;border-radius:100px;border:1px solid var(--border);color:var(--text3);}
+    .acq-pill.critical{border-color:rgba(192,17,30,.3);color:var(--red);}
+    .acq-pill.high{border-color:rgba(184,134,11,.3);color:var(--yellow);}
+    .act-row{display:flex;gap:7px;font-size:11px;color:var(--text2);padding:5px 0;}
+    .act-arr{color:var(--green2);flex-shrink:0;}
+    .markov-box{padding:11px;border-radius:7px;background:rgba(31,78,121,0.04);border:1px solid rgba(31,78,121,0.15);margin-top:11px;}
+    .markov-title{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:7px;}
+    .markov-trans{display:flex;flex-wrap:wrap;gap:5px;}
+    .markov-pill{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 8px;border-radius:100px;background:var(--bg2);border:1px solid var(--border);color:var(--text3);}
+    .sal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;}
+    .sal-box{padding:11px;border-radius:7px;text-align:center;background:var(--surface);border:1px solid var(--border);}
+    .sal-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;margin-bottom:3px;}
+    .sal-val{font-size:11px;font-weight:600;color:var(--green);}
+    .frontier-box{padding:11px;border-radius:7px;background:var(--surface);border:1px solid var(--border);margin-top:11px;}
+    .frontier-title{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:7px;}
+    .frontier-row{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--text2);padding:3px 0;border-bottom:1px solid var(--border);}
+    .frontier-row:last-child{border-bottom:none;}
+    .sharpe{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);}
+
+    /* IMPROVEMENTS */
+    .opt-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+    .opt-stat{padding:12px;text-align:center;border-radius:9px;background:var(--surface);border:1px solid var(--border);}
+    .opt-val{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--green);letter-spacing:-.5px;}
+    .opt-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;margin-top:3px;}
+    .improv-card{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px;}
+    .imp-orig{padding:9px 12px;background:rgba(192,17,30,.03);border-bottom:1px solid var(--border);}
+    .imp-optim{padding:9px 12px;background:rgba(42,96,73,.03);}
+    .diff-lbl{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:3px;display:flex;align-items:center;gap:5px;}
+    .diff-lbl span{font-size:8px;padding:1px 5px;border-radius:3px;background:rgba(42,96,73,.08);color:var(--green);}
+    .diff-txt{font-size:12px;line-height:1.55;}
+    .diff-orig-col{color:var(--text2);}
+    .diff-opt-col{color:var(--green);}
+    .kw-adds{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px;}
+    .kw-add-pill{font-family:'JetBrains Mono',monospace;font-size:8px;padding:1px 6px;border-radius:3px;background:rgba(42,96,73,.08);color:var(--green);border:1px solid rgba(42,96,73,.2);}
+    .evo-badge{font-family:'JetBrains Mono',monospace;font-size:8px;padding:1px 6px;border-radius:3px;background:rgba(41,128,185,.07);color:var(--blue2);border:1px solid rgba(41,128,185,.18);margin-left:5px;}
+    .fitness-badge{font-family:'JetBrains Mono',monospace;font-size:8px;padding:2px 7px;border-radius:100px;background:rgba(42,96,73,.08);color:var(--green);}
+    .constraint-box{padding:10px 13px;border-radius:7px;margin-top:12px;border:1px solid var(--border);}
+    .cb-ok{background:rgba(42,96,73,.05);}
+    .cb-warn{background:rgba(184,134,11,.05);border-color:rgba(184,134,11,.25);}
+
+    /* TIPS */
+    .tips-list{display:flex;flex-direction:column;gap:10px;}
+    .tip-card{border:1px solid var(--border);border-radius:9px;overflow:hidden;}
+    .tip-head{padding:9px 13px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--bg2);}
+    .tip-p{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1px;padding:2px 7px;border-radius:100px;}
+    .tp-critical{background:rgba(192,17,30,.08);color:var(--red);border:1px solid rgba(192,17,30,.2);}
+    .tp-high{background:rgba(184,134,11,.08);color:var(--yellow);border:1px solid rgba(184,134,11,.2);}
+    .tp-medium{background:rgba(41,128,185,.08);color:var(--blue2);border:1px solid rgba(41,128,185,.2);}
+    .tip-title{font-size:12px;font-weight:600;}
+    .tip-body{padding:11px 13px;}
+    .tip-issue{font-size:11.5px;color:var(--text2);margin-bottom:7px;line-height:1.6;}
+    .tip-fix{font-size:11.5px;color:var(--green);line-height:1.6;padding:7px 11px;background:rgba(42,96,73,.04);border-left:3px solid var(--green2);border-radius:0 5px 5px 0;}
+
+    /* PROFILE */
+    .profile-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-top:14px;}
+    @media(max-width:700px){.profile-grid{grid-template-columns:repeat(3,1fr);}}
+    .profile-cell{padding:9px 11px;border-radius:7px;background:var(--surface);border:1px solid var(--border);}
+    .prof-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3);letter-spacing:1px;margin-bottom:3px;}
+    .prof-val{font-size:11.5px;font-weight:600;}
+    .skill-graph-box{padding:11px;border-radius:7px;background:var(--surface);border:1px solid var(--border);margin-top:10px;}
+    .sg-title{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:7px;}
+    .sg-edge{font-size:10px;color:var(--text2);display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+    .sg-w{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);}
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar{width:4px;height:4px;}
+    ::-webkit-scrollbar-track{background:var(--bg);}
+    ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+    ::-webkit-scrollbar-thumb:hover{background:var(--text3);}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useCallback, useRef } = React;
+
+/* helpers */
+function sc(n){return n>=70?'sv-high':n>=45?'sv-mid':'sv-low';}
+function stripe(n){if(n>=75)return'#2a6049';if(n>=55)return'#2980b9';if(n>=35)return'#b8860b';return'#c0111e';}
+function bar(n){if(n>=70)return'#3d8a68';if(n>=40)return'#2980b9';if(n>=20)return'#b8860b';return'#c0111e';}
+function tclass(t){return{rapidly_growing:'t-rg',growing:'t-g',stable:'t-s',declining:'t-d',obsolete:'t-o'}[t]||'t-s';}
+function pclass(p){return p==='critical'?'critical':p==='high'?'high':'medium';}
+
+/* PCAM Pipeline Widget */
+function PCAMPipeline({phase}){
+  const nodes=[
+    {id:'INTENT',name:'Intent Analyzer',desc:'Selective agent activation',phases:[1]},
+    {id:'A-01',name:'Parser + Graph',desc:'Entity graph + skill centrality',phases:[1]},
+    {id:'A-02',name:'PASE-ADV',desc:'Adversarial ATS + Stackelberg',phases:[2]},
+    {id:'A-03',name:'TSDMV-ECO',desc:'Ecological skill decay model',phases:[2]},
+    {id:'A-04',name:'SCIS-CL',desc:'Cognitive load + attention',phases:[3]},
+    {id:'A-05',name:'MCTE Career',desc:'Markov transitions + frontier',phases:[3]},
+    {id:'CSRRE',name:'CSRRE-EVO',desc:'Evolutionary reconstruction',phases:[4]},
+  ];
+  return(
+    <div className="pipeline-widget">
+      <div className="pw-title">PCAM Architecture — 7 Novel Agents</div>
+      <div className="pw-nodes">
+        {nodes.map(n=>{
+          const isActive=n.phases.includes(phase);
+          const isDone=phase>Math.max(...n.phases);
+          const status=isDone?'done':isActive?'active':'';
+          const lbl=isDone?'done':isActive?'running':'idle';
+          return(
+            <div key={n.id} className="pw-node">
+              <div className={`pw-icon ${status} ${isActive&&phase>0?'spin':''}`}>{n.id}</div>
+              <div className="pw-info">
+                <div className="pw-name">{n.name}</div>
+                <div className="pw-desc">{n.desc}</div>
+              </div>
+              <div className={`pw-status s-${lbl}`}>{lbl}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* Score Overview */
+function ScoreOverview({data}){
+  const ats=Math.round(data.atsResult?.passProbability??0);
+  const ski=Math.round(data.skillIntelligence?.overallSkillHealthScore??0);
+  const imp=Math.round(data.feedbackAnalysis?.overallImpactScore??0);
+  const rec=Math.round(data.feedbackAnalysis?.recruiterExperienceScore??0);
+  return(
+    <div className="score-grid">
+      {[
+        {lbl:'ATS Pass Probability',val:ats,sfx:'%',algo:'PASE-ADV adversarial'},
+        {lbl:'Skill Health Score',val:ski,sfx:'',algo:'TSDMV-ECO ecological'},
+        {lbl:'Resume Impact Score',val:imp,sfx:'',algo:'SCIS-CL sentence level'},
+        {lbl:'Recruiter Experience',val:rec,sfx:'',algo:'Attention × SCIS'},
+      ].map(s=>(
+        <div className="score-card" key={s.lbl}>
+          <div className={`score-val ${sc(s.val)}`}>{s.val}{s.sfx}</div>
+          <div className="score-lbl">{s.lbl}</div>
+          <div className="score-algo">{s.algo}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* PCAM Stats Banner */
+function PCamBanner({metadata}){
+  const ps=metadata?.pcamStats||{};
+  const nc=metadata?.novelComponents||[];
+  return(
+    <div className="pcam-banner">
+      {[
+        {val:ps.totalApiCalls??'—',lbl:'API Calls'},
+        {val:ps.callsSaved??'—',lbl:'Calls Saved'},
+        {val:ps.efficiency||'—',lbl:'Efficiency'},
+        {val:`${((metadata?.totalProcessingTimeMs||0)/1000).toFixed(1)}s`,lbl:'Total Time'},
+      ].map((s,i)=>(
+        <React.Fragment key={s.lbl}>
+          {i>0&&<div className="pcam-divider"/>}
+          <div className="pcam-stat">
+            <div className="pcam-stat-val">{s.val}</div>
+            <div className="pcam-stat-lbl">{s.lbl}</div>
+          </div>
+        </React.Fragment>
+      ))}
+      <div className="pcam-divider"/>
+      <div className="pcam-chips">
+        {nc.slice(0,6).map(c=><span key={c} className="pcam-chip">{c}</span>)}
+      </div>
+    </div>
+  );
+}
+
+/* ─── HEATMAP helpers ─── */
+const TIERS=[
+  {key:'elite',  label:'Elite',   range:'85–100', color:'#1a6640', bg:'rgba(26,102,64,0.10)',  chip:'rgba(26,102,64,0.12)',  desc:'Outstanding — keep exactly as is'},
+  {key:'strong', label:'Strong',  range:'65–84',  color:'#2a8a5a', bg:'rgba(42,138,90,0.08)',  chip:'rgba(42,138,90,0.10)',  desc:'Well written — minor polish possible'},
+  {key:'average',label:'Average', range:'45–64',  color:'#2980b9', bg:'rgba(41,128,185,0.08)', chip:'rgba(41,128,185,0.10)', desc:'Decent — real improvement possible'},
+  {key:'weak',   label:'Weak',    range:'25–44',  color:'#c87000', bg:'rgba(200,112,0,0.08)',   chip:'rgba(200,112,0,0.10)',  desc:'Below average — needs a rewrite'},
+  {key:'poor',   label:'Poor',    range:'0–24',   color:'#c0111e', bg:'rgba(192,17,30,0.08)',   chip:'rgba(192,17,30,0.10)',  desc:'Critical — replace or remove'},
+];
+function tierFor(n){
+  if(n>=85)return TIERS[0];
+  if(n>=65)return TIERS[1];
+  if(n>=45)return TIERS[2];
+  if(n>=25)return TIERS[3];
+  return TIERS[4];
+}
+function dimColor(v){
+  if(v>=80)return'#1a6640';if(v>=60)return'#2a8a5a';if(v>=40)return'#2980b9';if(v>=20)return'#c87000';return'#c0111e';
+}
+
+/* ─── HEATMAP TAB ─── */
+function HeatmapTab({feedbackAnalysis}){
+  const [open,setOpen]=useState(null);
+  const [filter,setFilter]=useState('all');
+  const sents=feedbackAnalysis?.sentences||[];
+
+  if(!sents.length)return(
+    <div className="hm-empty">
+      <div style={{fontSize:28,marginBottom:8}}>📄</div>
+      <div style={{fontWeight:600,marginBottom:4}}>No resume bullets found</div>
+      <div style={{fontSize:11}}>Upload a resume with bullet-point experience entries to see the heatmap.</div>
+    </div>
+  );
+
+  /* stats */
+  const avg=Math.round(sents.reduce((a,s)=>a+(s.effectiveScore||s.scisScore||0),0)/sents.length);
+  const counts={elite:0,strong:0,average:0,weak:0,poor:0};
+  sents.forEach(s=>{ const t=tierFor(s.effectiveScore||s.scisScore||0); counts[t.key]=(counts[t.key]||0)+1; });
+  const topTier=tierFor(avg);
+
+  /* filter */
+  const visible=filter==='all'?sents:sents.filter(s=>tierFor(s.effectiveScore||s.scisScore||0).key===filter);
+
+  /* group by source role */
+  const groups=[];
+  let lastSrc=null;
+  visible.forEach((s,i)=>{
+    const src=s.source||'Experience';
+    if(src!==lastSrc){groups.push({src,items:[]});lastSrc=src;}
+    groups[groups.length-1].items.push({s,origIdx:sents.indexOf(s)});
+  });
+
+  const dimLbls={quantification:'Quantification',verbStrength:'Verb Strength',skillRelevance:'Skill Match',specificity:'Specificity',temporalRelevance:'Recency'};
+  const dimShort={quantification:'Quant',verbStrength:'Verb',skillRelevance:'Skill',specificity:'Spec',temporalRelevance:'Time'};
+
+  return(
+    <div>
+      {/* top info strip */}
+      <div className="info-box" style={{marginBottom:14}}>
+        <strong>Resume Impact Heatmap</strong> — Every bullet is scored by the SCIS-CL algorithm across 5 dimensions.
+        The <strong>Effective Score</strong> = SCIS × recruiter attention weight × (1 − cognitive load penalty).
+        <strong> Click any line</strong> to expand its full breakdown and AI rewrite.
+      </div>
+
+      <div className="hm-layout">
+
+        {/* ── LEFT: resume document ── */}
+        <div className="hm-doc">
+          <div className="hm-doc-header">
+            <div>
+              <div className="hm-doc-title">📄 Your Resume — Scored Line by Line</div>
+              <div className="hm-doc-sub">{sents.length} bullets analysed · click any line to expand</div>
+            </div>
+            <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:11,fontWeight:700,color:topTier.color}}>
+              avg {avg}/100
+            </div>
+          </div>
+
+          {/* filter bar */}
+          <div className="hm-filter-row">
+            {[{key:'all',label:`All (${sents.length})`},...TIERS.map(t=>({key:t.key,label:`${t.label} (${counts[t.key]||0})`}))].map(f=>(
+              <button
+                key={f.key}
+                className={'hm-filter-btn'+(filter===f.key?' active':'')}
+                style={filter===f.key?{background:f.key==='all'?'#2a6049':TIERS.find(t=>t.key===f.key)?.color||'#2a6049'}:{}}
+                onClick={()=>setFilter(f.key)}
+              >{f.label}</button>
+            ))}
+          </div>
+
+          <div className="hm-resume-body">
+            {visible.length===0&&(
+              <div style={{textAlign:'center',padding:'20px',color:'var(--text3)',fontSize:12}}>No bullets in this tier.</div>
+            )}
+            {groups.map((g,gi)=>(
+              <div key={gi}>
+                <div className="hm-section-sep">{g.src}</div>
+                {g.items.map(({s,origIdx})=>{
+                  const score=s.effectiveScore||s.scisScore||0;
+                  const t=tierFor(score);
+                  const isOpen=open===origIdx;
+                  const dims=s.dimensions||{};
+                  return(
+                    <div
+                      key={origIdx}
+                      className={'hm-line'+(isOpen?' expanded':'')}
+                      style={{background:t.bg,marginBottom:3}}
+                      onClick={()=>setOpen(isOpen?null:origIdx)}
+                    >
+                      <div className="hm-line-main">
+                        {/* color gutter */}
+                        <div className="hm-line-gutter" style={{background:t.color}}/>
+                        {/* score number */}
+                        <div className="hm-line-score-col" style={{background:t.bg}}>
+                          <div className="hm-line-score-num" style={{color:t.color}}>{score}</div>
+                        </div>
+                        {/* text + chips */}
+                        <div className="hm-line-body">
+                          <div className="hm-line-text">{s.text}</div>
+                          <div className="hm-line-chips">
+                            <span className="hm-chip hm-chip-eff" style={{background:t.chip,color:t.color,border:`1px solid ${t.color}33`}}>{t.label}</span>
+                            {s.effectiveScore&&s.effectiveScore!==s.scisScore&&(
+                              <span className="hm-chip" style={{background:'rgba(31,78,121,0.08)',color:'#1f4e79',border:'1px solid rgba(31,78,121,0.18)'}}>raw:{s.scisScore}</span>
+                            )}
+                            {s.attentionWeight&&(
+                              <span className="hm-chip" style={{background:'rgba(31,78,121,0.06)',color:'#2980b9',border:'1px solid rgba(41,128,185,0.2)'}}>attn:{s.attentionWeight}</span>
+                            )}
+                            {s.cognitiveLoad?.issues?.length>0&&(
+                              <span className="hm-chip" style={{background:'rgba(200,112,0,0.08)',color:'#c87000',border:'1px solid rgba(200,112,0,0.2)'}}>⚠ CL</span>
+                            )}
+                            {/* mini dim bars */}
+                            {Object.entries(dims).map(([k,v])=>(
+                              <span key={k} className="hm-chip" style={{background:'var(--bg2)',color:'var(--text3)',border:'1px solid var(--border)'}}>
+                                {dimShort[k]||k}:{v}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="hm-line-right">{isOpen?'▲':'▼'}</div>
+                      </div>
+
+                      {/* expanded detail */}
+                      {isOpen&&(
+                        <div className="hm-detail">
+                          {/* 5-dim breakdown cards */}
+                          {Object.keys(dims).length>0&&(
+                            <>
+                              <div style={{fontSize:10,fontWeight:600,color:'var(--text2)',marginBottom:7}}>5-Dimension Breakdown</div>
+                              <div className="hm-detail-grid">
+                                {Object.entries(dims).map(([k,v])=>{
+                                  const dc=dimColor(v);
+                                  return(
+                                    <div key={k} className="hm-dim-card" style={{background:`${dc}10`,border:`1px solid ${dc}28`}}>
+                                      <div className="hm-dim-name">{dimShort[k]||k}</div>
+                                      <div className="hm-dim-val" style={{color:dc}}>{v}</div>
+                                      <div className="hm-dim-bar">
+                                        <div className="hm-dim-fill" style={{width:`${v}%`,background:dc}}/>
+                                      </div>
+                                      <div style={{fontSize:8,color:'var(--text3)',marginTop:3,fontFamily:'JetBrains Mono,monospace'}}>{dimLbls[k]||k}</div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </>
+                          )}
+
+                          {/* attention + CL row */}
+                          <div className="hm-detail-row">
+                            {s.attentionWeight&&(
+                              <div style={{flex:1}}>
+                                <div style={{fontSize:9,color:'var(--text3)',marginBottom:3}}>Recruiter Attention Weight</div>
+                                <div className="hm-attn-vis">
+                                  <div className="hm-attn-bar">
+                                    <div className="hm-attn-fill" style={{width:`${Math.round(s.attentionWeight*100)}%`}}/>
+                                  </div>
+                                  <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:10,color:'#2980b9',minWidth:36}}>{s.attentionWeight}</span>
+                                </div>
+                              </div>
+                            )}
+                            {s.cognitiveLoad&&(
+                              <div style={{flex:1,paddingLeft:s.attentionWeight?12:0,borderLeft:s.attentionWeight?'1px solid var(--border)':'none'}}>
+                                <div style={{fontSize:9,color:'var(--text3)',marginBottom:3}}>Cognitive Load</div>
+                                <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:10,color:'var(--text2)'}}>
+                                  penalty: <strong style={{color:s.cognitiveLoad.penalty>0.3?'#c0111e':'var(--text)'}}>{Math.round((s.cognitiveLoad.penalty||0)*100)}%</strong>
+                                  {s.cognitiveLoad.wordCount&&<> · {s.cognitiveLoad.wordCount} words</>}
+                                </div>
+                                {s.cognitiveLoad.issues?.length>0&&(
+                                  <div className="hm-cl-warn">⚠ {s.cognitiveLoad.issues.join(' · ')}</div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* score formula */}
+                          <div style={{fontSize:9,fontFamily:'JetBrains Mono,monospace',color:'var(--text3)',padding:'6px 0',borderTop:'1px solid var(--border)',marginBottom:s.rewrite?8:0}}>
+                            Effective Score = {s.scisScore||'?'} (SCIS) × {s.attentionWeight||1} (attn) × (1 − {Math.round((s.cognitiveLoad?.penalty||0)*100)/100} CL) = <strong style={{color:t.color}}>{score}</strong>
+                          </div>
+
+                          {/* rewrite */}
+                          {s.rewrite&&(
+                            <div className="rewrite-block" style={{background:'rgba(42,96,73,0.06)',border:'1px solid rgba(42,96,73,0.18)'}}>
+                              <div className="rw-lbl" style={{color:'#2a6049'}}>✦ AI REWRITE SUGGESTION</div>
+                              <div className="rw-txt" style={{color:'var(--text2)'}}>{s.rewrite}</div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── RIGHT: legend + stats panel ── */}
+        <div>
+          <div className="hm-legend">
+            <div className="hm-legend-title">Colour Code Guide</div>
+            {TIERS.map(t=>(
+              <div key={t.key} className="hm-legend-row">
+                <div className="hm-legend-chip" style={{background:t.color}}/>
+                <div className="hm-legend-info">
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline'}}>
+                    <span className="hm-legend-label" style={{color:t.color}}>{t.label}</span>
+                    <span className="hm-legend-range">{t.range}</span>
+                  </div>
+                  <div className="hm-legend-desc">{t.desc}</div>
+                </div>
+              </div>
+            ))}
+
+            {/* stats */}
+            <div className="hm-stats-grid">
+              <div className="hm-stat-box">
+                <div className="hm-stat-num" style={{color:topTier.color}}>{avg}</div>
+                <div className="hm-stat-lbl">avg score</div>
+              </div>
+              <div className="hm-stat-box">
+                <div className="hm-stat-num" style={{color:'#2a6049'}}>{counts.elite+counts.strong}</div>
+                <div className="hm-stat-lbl">strong lines</div>
+              </div>
+              <div className="hm-stat-box">
+                <div className="hm-stat-num" style={{color:'#c0111e'}}>{counts.weak+counts.poor}</div>
+                <div className="hm-stat-lbl">need work</div>
+              </div>
+              <div className="hm-stat-box">
+                <div className="hm-stat-num" style={{color:'#2980b9'}}>{sents.length}</div>
+                <div className="hm-stat-lbl">total bullets</div>
+              </div>
+            </div>
+
+            {/* score bar */}
+            <div style={{marginTop:12}}>
+              <div style={{display:'flex',justifyContent:'space-between',fontSize:9,color:'var(--text3)',marginBottom:4}}>
+                <span>Overall Resume Impact</span>
+                <span style={{fontFamily:'JetBrains Mono,monospace',fontWeight:700,color:topTier.color}}>{avg}/100</span>
+              </div>
+              <div className="hm-score-bar">
+                <div className="hm-score-fill" style={{width:`${avg}%`,background:`linear-gradient(90deg,${topTier.color},${topTier.color}aa)`}}/>
+              </div>
+            </div>
+
+            {/* distribution mini-chart */}
+            <div style={{marginTop:12}}>
+              <div style={{fontSize:9,color:'var(--text3)',marginBottom:6,fontFamily:'JetBrains Mono,monospace',letterSpacing:'1px',textTransform:'uppercase'}}>Distribution</div>
+              {TIERS.map(t=>(
+                <div key={t.key} style={{display:'flex',alignItems:'center',gap:6,marginBottom:4}}>
+                  <div style={{width:8,height:8,borderRadius:2,background:t.color,flexShrink:0}}/>
+                  <div style={{flex:1,height:6,background:'var(--border)',borderRadius:3,overflow:'hidden'}}>
+                    <div style={{height:'100%',width:`${sents.length?((counts[t.key]||0)/sents.length)*100:0}%`,background:t.color,borderRadius:3,transition:'width .4s'}}/>
+                  </div>
+                  <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:9,color:'var(--text3)',minWidth:20,textAlign:'right'}}>{counts[t.key]||0}</div>
+                </div>
+              ))}
+            </div>
+
+            {feedbackAnalysis?.attentionModel&&(
+              <div className="hm-attn-note">
+                <strong>Attention model:</strong> bullet decay λ={feedbackAnalysis.attentionModel.bulletDecay} · role decay λ={feedbackAnalysis.attentionModel.roleDecay} · avg {feedbackAnalysis.attentionModel.avgAttention}
+              </div>
+            )}
+          </div>
+
+          {/* how to read */}
+          <div style={{marginTop:12,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:10,padding:'12px 14px',fontSize:10,color:'var(--text2)',lineHeight:1.7}}>
+            <div style={{fontWeight:700,color:'var(--text)',marginBottom:6}}>How to read this</div>
+            <div>The <strong>left gutter</strong> and score show the Effective Score — not just raw SCIS but adjusted for recruiter attention (bullets lower on the page score lower) and cognitive load (overly complex sentences are penalized).</div>
+            <div style={{marginTop:6}}>Use the <strong>filter buttons</strong> to focus on a tier. Click any bullet to see its 5-dimension breakdown and an AI rewrite.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+/* Skills Tab */
+function SkillsTab({skillIntelligence}){
+  const skills=(skillIntelligence?.skills||[]).sort((a,b)=>(b.svsPercent||0)-(a.svsPercent||0));
+  const gaps=skillIntelligence?.skillGaps||[];
+  const eco=skillIntelligence?.ecosystemAnalysis||null;
+  const pf=skillIntelligence?.portfolioAnalysis||null;
+  const hl=skillIntelligence?.halfLifeTable||[];
+
+  return(
+    <div>
+      <div className="info-box">
+        <strong>TSDMV-ECO:</strong> SVS = proficiency × e<sup>−λ×years_since_use</sup> × market_demand_index.
+        Hub skills (high centrality in skill co-occurrence graph) get keystoneBonus.
+        Invasive skills (LLM, Next.js, etc.) displace adjacent older skills.
+      </div>
+
+      {eco&&(
+        <div className="eco-grid">
+          <div className="eco-box">
+            <div className="eco-box-title">Thriving 🟢</div>
+            <div className="eco-list">{eco.thrivingSkills.map(s=><div key={s} className="eco-item"><div className="eco-dot" style={{background:'#3d8a68'}}/>{s}</div>)}</div>
+          </div>
+          <div className="eco-box">
+            <div className="eco-box-title">Stressed 🟡</div>
+            <div className="eco-list">{eco.stressedSkills.map(s=><div key={s} className="eco-item"><div className="eco-dot" style={{background:'#b8860b'}}/>{s}</div>)}</div>
+          </div>
+          <div className="eco-box">
+            <div className="eco-box-title">Endangered 🔴</div>
+            <div className="eco-list">{eco.endangeredSkills.map(s=><div key={s} className="eco-item"><div className="eco-dot" style={{background:'#c0111e'}}/>{s}</div>)}</div>
+          </div>
+        </div>
+      )}
+
+      <div className="sec-lbl">Skill Vitality Scores (TSDMV-ECO)</div>
+      <div className="skill-list">
+        {skills.slice(0,22).map(s=>(
+          <div className="skill-row" key={s.name}>
+            <div className="skill-name" title={s.name}>{s.name}</div>
+            <div className="skill-bar"><div className="skill-fill" style={{width:`${s.svsPercent||0}%`,background:bar(s.svsPercent||0)}}/></div>
+            <div className="skill-pct">{s.svsPercent||0}%</div>
+            <span className={`t-pill ${tclass(s.trend)}`}>{(s.trend||'stable').replace(/_/g,' ')}</span>
+            <div style={{display:'flex',gap:3,flexWrap:'wrap'}}>
+              {s.isHubSkill&&<span className="hub-badge">hub</span>}
+              {s.displacementPenalty>0&&<span style={{fontSize:9,color:'var(--amber)',fontFamily:'JetBrains Mono,monospace'}}>−{s.displacementPenalty}%</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {pf&&(
+        <div className="portfolio-box">
+          <div className="sec-lbl">Portfolio Analysis (MPT)</div>
+          <div className="pf-row"><span className="pf-lbl">Diversity Score</span><span className="pf-val">{pf.diversityScore}</span></div>
+          <div className="pf-row"><span className="pf-lbl">Grade</span><span className="pf-val" style={{color:'var(--green)'}}>{pf.diversityGrade}</span></div>
+          {pf.keystoneSkills?.length>0&&<div className="pf-row"><span className="pf-lbl">Keystone Skills</span><span className="pf-val">{pf.keystoneSkills.join(', ')}</span></div>}
+          {pf.invasiveSkills?.length>0&&<div className="pf-row"><span className="pf-lbl">Invasive Skills</span><span className="pf-val" style={{color:'var(--green2)'}}>{pf.invasiveSkills.join(', ')}</span></div>}
+          {pf.displacedSkills?.length>0&&<div className="pf-row"><span className="pf-lbl">Displaced</span><span className="pf-val" style={{color:'var(--amber)'}}>{pf.displacedSkills.join(', ')}</span></div>}
+        </div>
+      )}
+
+      {gaps.length>0&&(
+        <>
+          <div className="sec-lbl" style={{marginTop:18}}>Skill Gaps to Address</div>
+          {gaps.map((g,i)=>(
+            <div key={i} style={{padding:'9px 12px',borderRadius:8,background:'var(--surface)',border:'1px solid var(--border)',marginBottom:6}}>
+              <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:5}}>
+                <span className={`tip-p tp-${g.importance}`}>{g.importance}</span>
+                <span style={{fontSize:12,fontWeight:600}}>{g.missingSkill}</span>
+                <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:9,color:'var(--text3)',marginLeft:'auto'}}>~{g.learningTimeWeeks}w</span>
+              </div>
+              <div className="pill-wrap">{g.recommendedResources?.slice(0,3).map((r,ri)=><span key={ri} style={{fontSize:9,padding:'2px 8px',borderRadius:100,background:'var(--bg2)',border:'1px solid var(--border)',color:'var(--text3)'}}>{r}</span>)}</div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {hl.length>0&&(
+        <>
+          <div className="sec-lbl" style={{marginTop:18}}>Radioactive Half-Life Table</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:6}}>
+            {hl.map(h=>(
+              <div key={h.category} style={{padding:'8px 11px',borderRadius:7,background:'var(--surface)',border:'1px solid var(--border)'}}>
+                <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:9,color:'var(--text3)',marginBottom:3}}>{h.category} (λ={h.lambda})</div>
+                <div style={{fontSize:12,fontWeight:600}}>Half-life: {h.halfLifeYears}y</div>
+                <div style={{fontSize:10,color:'var(--text3)',marginTop:2}}>{h.interpretation}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ATS Tab */
+function ATSTab({atsResult}){
+  if(!atsResult||!atsResult.passProbability)return null;
+  const prob=atsResult.passProbability||0;
+  const ci=atsResult.confidenceInterval||[prob-8,prob+8];
+  const secs=atsResult.sectionScores||{};
+  const kws=atsResult.weightedKeywordMatrix||[];
+  const adv=atsResult.adversarialSimulation||null;
+  const kd=atsResult.keywordDensityAnalysis||null;
+  const sg=atsResult.stackelbergEquilibrium||null;
+
+  return(
+    <div>
+      <div style={{marginBottom:16}}>
+        <div className="ats-big" style={{color:stripe(prob)}}>{Math.round(prob)}%</div>
+        <div className="ats-ci">ATS PASS PROBABILITY — 95% CI: [{Math.round(ci[0])}%, {Math.round(ci[1])}%] — PASE-ADV Adversarial Simulation</div>
+        {atsResult.recommendation&&<div className="ats-rec">{atsResult.recommendation}</div>}
+      </div>
+
+      {adv&&(
+        <div className="adv-grid">
+          <div className="adv-box">
+            <div className="adv-box-title">Strict ATS Score</div>
+            <div style={{fontFamily:'Fraunces,serif',fontSize:32,fontWeight:700,color:stripe(adv.strictATSScore)}}>{adv.strictATSScore}%</div>
+            <div style={{fontSize:10,color:'var(--text3)',marginTop:4}}>{adv.roleTier} profile • {Math.round(adv.strictWeight*100)}% weight</div>
+            <div style={{fontSize:10,color:'var(--text2)',marginTop:5,lineHeight:1.5}}>{adv.explanation}</div>
+          </div>
+          <div className="adv-box">
+            <div className="adv-box-title">Lenient ATS Score</div>
+            <div style={{fontFamily:'Fraunces,serif',fontSize:32,fontWeight:700,color:stripe(adv.lenientATSScore)}}>{adv.lenientATSScore}%</div>
+            <div style={{fontSize:10,color:'var(--text3)',marginTop:4}}>semantic match • {Math.round(adv.lenientWeight*100)}% weight</div>
+            {kd&&<div style={{marginTop:6,fontSize:10,color:kd.status==='optimal'?'var(--green)':kd.status==='too_sparse'?'var(--amber)':'var(--red)'}}>Keyword density: {kd.densityPer100}/100w ({kd.status.replace('_',' ')})</div>}
+          </div>
+        </div>
+      )}
+
+      <div className="adv-grid">
+        <div>
+          <div className="sec-lbl">Section Scores</div>
+          {Object.entries(secs).map(([k,v])=>(
+            <div className="bar-row" key={k}>
+              <div className="bar-lbl">{k}</div>
+              <div className="bar-track"><div className="bar-fill" style={{width:`${v}%`,background:bar(v)}}/></div>
+              <div className="bar-val">{v}</div>
+            </div>
+          ))}
+        </div>
+        <div>
+          <div className="sec-lbl">Critical Missing Keywords</div>
+          <div className="pill-wrap">
+            {atsResult.criticalMissingKeywords?.length
+              ?atsResult.criticalMissingKeywords.map((kw,i)=><span key={i} className="miss-pill">{kw}</span>)
+              :<span style={{fontSize:11,color:'var(--text3)'}}>None</span>}
+          </div>
+        </div>
+      </div>
+
+      {kws.length>0&&(
+        <>
+          <div className="sec-lbl">Keyword Analysis</div>
+          {kws.slice(0,14).map((kw,i)=>(
+            <div className="kw-row" key={i}>
+              <div className="kw-dot" style={{background:kw.foundInResume?'#3d8a68':kw.semanticMatchScore>0.4?'#b8860b':'#c0111e'}}/>
+              <div className="kw-txt">{kw.keyword}</div>
+              <div className="kw-meta" style={{marginRight:8}}>{kw.semanticMatchScore>=1?'✓ exact':kw.semanticMatchScore>0.4?`~${Math.round(kw.semanticMatchScore*100)}%`:'✗ miss'}</div>
+              <div className="kw-meta">{kw.weight?.toFixed(1)}×</div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {sg&&(
+        <div className="game-box">
+          <div className="game-title">Stackelberg Game Equilibrium</div>
+          <div className="game-row"><span>Current density</span><span style={{fontFamily:'JetBrains Mono,monospace',fontSize:10}}>{sg.currentDensity}/100w</span></div>
+          <div className="game-row"><span>Optimal density</span><span style={{fontFamily:'JetBrains Mono,monospace',fontSize:10}}>{sg.optimalDensity}/100w</span></div>
+          <div className="game-row"><span>Equilibrium gap</span><span style={{fontFamily:'JetBrains Mono,monospace',fontSize:10,color:Math.abs(sg.equilibriumGap)<0.5?'var(--green)':'var(--amber)'}}>{sg.equilibriumGap>=0?'+':''}{sg.equilibriumGap}</span></div>
+          <div className="game-rec">{sg.recommendation}</div>
+          {sg.priorityKeywords?.length>0&&<div className="pill-wrap" style={{marginTop:7}}>{sg.priorityKeywords.map((k,i)=><span key={i} className="miss-pill">{k}</span>)}</div>}
+        </div>
+      )}
+
+      {atsResult.atsCompatibilityIssues?.length>0&&(
+        <>
+          <div className="sec-lbl" style={{marginTop:14}}>ATS Compatibility Issues</div>
+          {atsResult.atsCompatibilityIssues.map((iss,i)=><div key={i} className="issue-row">⚠ {iss}</div>)}
+        </>
+      )}
+    </div>
+  );
+}
+
+/* Career Tab */
+function CareerTab({careerTrajectory}){
+  const [open,setOpen]=useState(0);
+  const paths=careerTrajectory?.careerPaths||[];
+  const mm=careerTrajectory?.markovModel||null;
+  const ef=careerTrajectory?.efficientFrontier||null;
+  const su=careerTrajectory?.skillUnlocks||[];
+
+  return(
+    <div>
+      {careerTrajectory?.currentState&&(
+        <div className="curr-box">
+          <div className="curr-lbl">Current State</div>
+          <div className="curr-role">{careerTrajectory.currentState.role}</div>
+          <div className="curr-val">{careerTrajectory.currentState.marketValue}</div>
+        </div>
+      )}
+
+      {mm&&(
+        <div className="markov-box" style={{marginBottom:14}}>
+          <div className="markov-title">Markov Model — 2-Year Transition Probabilities</div>
+          <div style={{fontSize:10,color:'var(--text2)',marginBottom:7,lineHeight:1.5}}>{mm.description}</div>
+          <div className="markov-trans">
+            {Object.entries(mm.transitions||{}).map(([state,prob])=>(
+              <span key={state} className="markov-pill">{state}: {Math.round(prob*100)}%</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {paths.map((path,i)=>{
+        const ptc=path.pathType==='vertical'?'pt-v':path.pathType==='lateral'?'pt-l':'pt-p';
+        const pf=path.portfolioMetrics||null;
+        return(
+          <div className="path-card" key={path.pathId||i}>
+            <div className="path-head" onClick={()=>setOpen(open===i?-1:i)}>
+              <div>
+                <div className="path-name">{path.pathName}</div>
+                <div className="path-badges">
+                  <span className={`pt-pill ${ptc}`}>{path.pathType}</span>
+                  <span className="path-prob">{path.probability}% probability</span>
+                  {pf&&<span style={{fontFamily:'JetBrains Mono,monospace',fontSize:8,color:'var(--green)',background:'rgba(42,96,73,.07)',padding:'1px 6px',borderRadius:100}}>Sharpe:{pf.sharpeRatio}</span>}
+                </div>
+              </div>
+              <span style={{color:'var(--text3)'}}>{open===i?'▲':'▼'}</span>
+            </div>
+            {open===i&&(
+              <div className="path-body">
+                {pf&&<div style={{padding:'8px 11px',borderRadius:7,background:'var(--bg)',border:'1px solid var(--border)',marginBottom:10,fontSize:11,color:'var(--text2)'}}>📊 Portfolio: {pf.expectedAnnualGrowth} growth/yr · Risk: {pf.risk} · {pf.recommendation}</div>}
+                <div className="sec-lbl">Career Timeline</div>
+                <div className="tl-grid">
+                  {path.timeline&&Object.entries(path.timeline).map(([k,v])=>(
+                    <React.Fragment key={k}>
+                      <div className="tl-yr">{k.replace(/([A-Z])/g,' $1').trim()}</div>
+                      <div className="tl-role">{v?.role}</div>
+                      <div className="tl-sal">{v?.salaryRange}</div>
+                    </React.Fragment>
+                  ))}
+                </div>
+                {path.bifurcationPoints?.length>0&&(
+                  <>
+                    <div className="sec-lbl">Bifurcation Points</div>
+                    {path.bifurcationPoints.map((bp,bi)=>(
+                      <div key={bi} style={{padding:'7px 10px',borderRadius:6,background:'rgba(31,78,121,.04)',border:'1px solid rgba(31,78,121,.15)',marginBottom:5,fontSize:11,color:'var(--text2)'}}>
+                        🔀 <strong>{bp.skill}</strong> (~{bp.learnWeeks}w · {bp.urgency}) — {bp.impact}
+                      </div>
+                    ))}
+                  </>
+                )}
+                {path.requiredSkillsToAcquire?.length>0&&(
+                  <>
+                    <div className="sec-lbl">Skills to Acquire</div>
+                    <div className="acq-wrap">
+                      {path.requiredSkillsToAcquire.map((s,si)=>(
+                        <span key={si} className={`acq-pill ${s.priority}`}>{s.skill} (~{s.timeToLearnWeeks}w)</span>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {path.recommendedActions?.length>0&&(
+                  <>
+                    <div className="sec-lbl">Recommended Actions</div>
+                    {path.recommendedActions.map((a,ai)=>(
+                      <div key={ai} className="act-row"><span className="act-arr">→</span>{a}</div>
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {ef&&(
+        <div className="frontier-box">
+          <div className="frontier-title">Efficient Frontier (MPT)</div>
+          <div style={{fontSize:11,color:'var(--green)',marginBottom:8}}>Optimal: {ef.optimalPath} — {ef.rationale}</div>
+          {ef.frontier?.map((f,i)=>(
+            <div key={i} className="frontier-row">
+              <span>{f.path}</span>
+              <span>{f.growth} · {f.risk} risk</span>
+              <span className="sharpe">S:{f.sharpe}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {su.length>0&&(
+        <>
+          <div className="sec-lbl" style={{marginTop:14}}>Seniority Level Unlock Map</div>
+          {su.map((u,i)=>(
+            <div key={i} style={{padding:'9px 12px',borderRadius:7,background:'var(--surface)',border:'1px solid var(--border)',marginBottom:6}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:5}}>
+                <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:9,padding:'2px 7px',borderRadius:100,background:u.readiness==='ready'?'rgba(42,96,73,.1)':u.readiness==='near-ready'?'rgba(184,134,11,.1)':'rgba(192,17,30,.08)',color:u.readiness==='ready'?'var(--green)':u.readiness==='near-ready'?'var(--yellow)':'var(--red)'}}>{u.readiness}</span>
+                <span style={{fontSize:12,fontWeight:600}}>→ {u.unlocks}</span>
+              </div>
+              {u.missingSkills?.length>0&&<div style={{fontSize:10,color:'var(--text3)'}}>Needs: {u.missingSkills.join(', ')}</div>}
+            </div>
+          ))}
+        </>
+      )}
+
+      {careerTrajectory?.salaryInsights&&(
+        <div className="sal-grid">
+          {[['Current Estimate',careerTrajectory.salaryInsights.currentEstimate],['With Upskilling',careerTrajectory.salaryInsights.potentialWithUpskilling],['Top Paying Path',careerTrajectory.salaryInsights.topPayingPath]].map(([l,v])=>(
+            <div key={l} className="sal-box"><div className="sal-lbl">{l}</div><div className="sal-val">{v}</div></div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Improvements Tab */
+function ImprovementsTab({reconstruction}){
+  const improved=reconstruction?.improvedBullets||[];
+  const opts=reconstruction?.optimizationSummary||{};
+  const evo=reconstruction?.evolutionSummary||null;
+  const cr=reconstruction?.constraintReport||null;
+
+  return(
+    <div>
+      <div className="opt-stats">
+        {[
+          ['Bullets Improved',evo?.bulletsEvolved||opts.bulletsImproved],
+          ['Keywords Added',opts.keywordsIntegrated],
+          ['ATS Lift',`+${evo?.estimatedATSLift||opts.estimatedATSImprovement||0}%`],
+        ].map(([l,v])=>(
+          <div key={l} className="opt-stat"><div className="opt-val">{v}</div><div className="opt-lbl">{l}</div></div>
+        ))}
+      </div>
+
+      {evo&&(
+        <div style={{fontSize:11,color:'var(--text3)',fontFamily:'JetBrains Mono,monospace',background:'var(--bg2)',borderRadius:7,padding:'8px 11px',marginBottom:12,letterSpacing:'.5px'}}>
+          CSRRE-EVO: fitness_gain={evo.totalFitnessGain} | verb_upgrades={evo.verbUpgrades} | length_trim={evo.lengthOptimized} | constraint_violations={evo.constraintViolations}
+        </div>
+      )}
+
+      {reconstruction?.recommendedSummary&&(
+        <>
+          <div className="sec-lbl">Recommended Professional Summary</div>
+          <div style={{padding:'12px 14px',borderRadius:8,background:'rgba(42,96,73,.04)',border:'1px solid rgba(42,96,73,.15)',fontSize:12,color:'var(--text2)',lineHeight:1.7,marginBottom:14}}>{reconstruction.recommendedSummary}</div>
+        </>
+      )}
+
+      <div className="sec-lbl">Evolved Bullets (sorted by fitness gain)</div>
+      {improved.length?improved.map((item,i)=>(
+        <div className="improv-card" key={i}>
+          <div className="imp-orig">
+            <div className="diff-lbl">Original <span>{item.improvementType?.replace(/_/g,' ')}</span>{item.fitnessGain>0&&<span className="fitness-badge" style={{marginLeft:5}}>+{item.fitnessGain} fitness</span>}</div>
+            <div className="diff-txt diff-orig-col">{item.original}</div>
+          </div>
+          <div className="imp-optim">
+            <div className="diff-lbl">
+              Optimized
+              {item.verbUpgraded&&<span className="evo-badge">verb↑</span>}
+              {item.lengthTrimmed&&<span className="evo-badge">trim</span>}
+              {item.wordCount&&<span style={{fontFamily:'JetBrains Mono,monospace',fontSize:8,color:'var(--text3)',marginLeft:4}}>{item.wordCount}w</span>}
+            </div>
+            <div className="diff-txt diff-opt-col">{item.optimized}</div>
+            {item.atsKeywordsAdded?.length>0&&(
+              <div className="kw-adds">{item.atsKeywordsAdded.map((kw,ki)=><span key={ki} className="kw-add-pill">+{kw}</span>)}</div>
+            )}
+            {item.suggestedKeywordsToAdd?.length>0&&(
+              <div style={{fontSize:10,color:'var(--amber)',marginTop:4}}>💡 Consider naturally adding: {item.suggestedKeywordsToAdd.join(', ')}</div>
+            )}
+          </div>
+        </div>
+      )):<div style={{color:'var(--text3)',fontSize:12}}>No bullet rewrites generated.</div>}
+
+      {cr&&(
+        <div className={`constraint-box ${cr.violations?.length>0?'cb-warn':'cb-ok'}`}>
+          <div style={{fontFamily:'JetBrains Mono,monospace',fontSize:8,letterSpacing:1.5,textTransform:'uppercase',color:cr.violations?.length>0?'var(--amber)':'var(--green)',marginBottom:5}}>
+            Constraint Satisfaction Report
+          </div>
+          <div style={{fontSize:11,color:'var(--text2)'}}>{cr.message}</div>
+          {cr.violations?.map((v,i)=>(
+            <div key={i} style={{fontSize:10,color:'var(--amber)',marginTop:4,padding:'4px 8px',background:'rgba(184,134,11,.05)',borderRadius:4}}>
+              ⚠ {v.detail}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Tips Tab */
+function TipsTab({reconstruction,atsResult,feedbackAnalysis}){
+  const tips=[];
+  (feedbackAnalysis?.topImprovementOpportunities||[]).slice(0,4).forEach(o=>{
+    tips.push({priority:'high',title:`Bullet #${(o.bulletIndex||0)+1}: ${o.issue}`,issue:o.issue,fix:o.fix});
+  });
+  const missing=atsResult?.criticalMissingKeywords||[];
+  if(missing.length)tips.push({priority:'critical',title:'Add Missing ATS Keywords',issue:`${missing.length} critical keyword(s) missing from your resume: ${missing.slice(0,6).join(', ')}.`,fix:`Integrate these keywords naturally into existing bullet points. Exact-match keywords score 2.5× higher in PASE simulation than semantic matches. Place the most important keyword in the first bullet of your most recent role.`});
+  (reconstruction?.keywordIntegrationSuggestions||[]).slice(0,3).forEach(s=>{
+    tips.push({priority:'medium',title:`Add keyword: "${s.keyword}"`,issue:`Should appear in: ${s.suggestedPlacement}.`,fix:s.context});
+  });
+  if(feedbackAnalysis?.generalFeedback)tips.push({priority:'medium',title:'General Feedback',issue:feedbackAnalysis.generalFeedback,fix:'Apply these improvements across all bullet points in your resume.'});
+  if(reconstruction?.sectionOrder?.length)tips.push({priority:'medium',title:'Optimize Section Order',issue:'ATS systems weight the first 300 words of your resume most heavily.',fix:`Recommended section order: ${reconstruction.sectionOrder.join(' → ')}`});
+  const evo=reconstruction?.evolutionSummary;
+  if(evo?.constraintViolations>0)tips.push({priority:'critical',title:'Review AI Rewrites for Accuracy',issue:`CSRRE-EVO detected ${evo.constraintViolations} potential constraint violation(s) in the suggested rewrites.`,fix:'Check the Rewrites tab for flagged items. Never apply a suggested rewrite that introduces numbers or facts not present in your original resume.'});
+
+  if(!tips.length)return<div style={{color:'var(--text3)',fontSize:12}}>No tips generated — run analysis first.</div>;
+
+  return(
+    <div>
+      <div className="info-box">
+        Tips derived from all 6 PCAM agents: PASE-ADV keyword analysis, SCIS-CL sentence scoring, TSDMV-ECO skill gaps, CSRRE-EVO optimization constraints. Work through <strong>Critical → High → Medium</strong>.
+      </div>
+      <div className="tips-list">
+        {tips.map((tip,i)=>(
+          <div className="tip-card" key={i}>
+            <div className="tip-head">
+              <span className={`tip-p tp-${tip.priority}`}>{tip.priority}</span>
+              <span className="tip-title">{tip.title}</span>
+            </div>
+            <div className="tip-body">
+              <div className="tip-issue">{tip.issue}</div>
+              <div className="tip-fix">💡 {tip.fix}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* Results Dashboard */
+function ResultsDashboard({data}){
+  const [tab,setTab]=useState('heatmap');
+  const TABS=[
+    {id:'heatmap',label:'Impact Heatmap'},
+    {id:'ats',label:'ATS Analysis'},
+    {id:'skills',label:'Skill Ecosystem'},
+    {id:'career',label:'Career Paths'},
+    {id:'improvements',label:'Evolved Rewrites'},
+    {id:'tips',label:'Resume Tips'},
+  ];
+  const eg=data.entityGraph||{};
+  const sg=data.metadata?.pcamStats?.skillGraph||null;
+
+  return(
+    <div>
+      <PCamBanner metadata={data.metadata}/>
+      <ScoreOverview data={data}/>
+      <div className="card">
+        <div className="card-body">
+          <div className="tab-row">
+            {TABS.map(t=><button key={t.id} className={`tab-btn ${tab===t.id?'active':''}`} onClick={()=>setTab(t.id)}>{t.label}</button>)}
+          </div>
+          {tab==='heatmap'&&<HeatmapTab feedbackAnalysis={data.feedbackAnalysis}/>}
+          {tab==='ats'&&<ATSTab atsResult={data.atsResult}/>}
+          {tab==='skills'&&<SkillsTab skillIntelligence={data.skillIntelligence}/>}
+          {tab==='career'&&<CareerTab careerTrajectory={data.careerTrajectory}/>}
+          {tab==='improvements'&&<ImprovementsTab reconstruction={data.reconstruction}/>}
+          {tab==='tips'&&<TipsTab reconstruction={data.reconstruction} atsResult={data.atsResult} feedbackAnalysis={data.feedbackAnalysis}/>}
+        </div>
+      </div>
+      <div className="card">
+        <div className="card-head"><div className="card-ico">👤</div><div className="card-title">Candidate Profile + Skill Graph</div></div>
+        <div className="card-body">
+          <div className="profile-grid">
+            {[
+              ['Name',eg.contact?.name||'—'],['Seniority',eg.seniorityLevel||'—'],['Domain',eg.primaryDomain||'—'],
+              ['Experience',`${eg.totalYearsExperience||0}y`],['Skills',eg.skills?.length||0],
+              ['Bullets',eg._meta?.totalBullets||0],
+            ].map(([l,v])=>(
+              <div key={l} className="profile-cell"><div className="prof-lbl">{l}</div><div className="prof-val">{v}</div></div>
+            ))}
+          </div>
+          {eg._meta?.hubSkills?.length>0&&(
+            <div style={{marginTop:10,fontSize:11,color:'var(--text3)'}}>
+              <span style={{fontFamily:'JetBrains Mono,monospace',fontSize:9,letterSpacing:1,marginRight:7}}>HUB SKILLS</span>
+              {eg._meta.hubSkills.map(s=><span key={s} className="hub-badge" style={{marginRight:4}}>{s}</span>)}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* App */
+function App(){
+  const [resumeText,setResumeText]=useState('');
+  const [jobDesc,setJobDesc]=useState('');
+  const [file,setFile]=useState(null);
+  const [apiKey,setApiKey]=useState('');
+  const [showKey,setShowKey]=useState(false);
+  const [loading,setLoading]=useState(false);
+  const [phase,setPhase]=useState(0);
+  const [result,setResult]=useState(null);
+  const [error,setError]=useState('');
+  const [drag,setDrag]=useState(false);
+  const fileRef=useRef();
+
+  const handleFile=useCallback(f=>{
+    if(!f)return;
+    const ok=['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/msword','text/plain'];
+    if(!ok.includes(f.type)){setError('Unsupported file type. Use PDF, DOC, DOCX, or TXT.');return;}
+    setFile(f);setResumeText('');setError('');
+  },[]);
+
+  const handleAnalyze=async()=>{
+    if(!resumeText.trim()&&!file){setError('Please provide a resume.');return;}
+    if(!apiKey.trim()){setError('Please enter your Google Gemini API key.');return;}
+    setError('');setResult(null);setLoading(true);setPhase(1);
+
+    try{
+      const fd=new FormData();
+      if(file)fd.append('resume',file);
+      else fd.append('resumeText',resumeText);
+      if(jobDesc.trim())fd.append('jobDescription',jobDesc);
+      fd.append('geminiApiKey',apiKey.trim());
+
+      const timer=setInterval(()=>setPhase(p=>Math.min(p+1,4)),5500);
+      const BACKEND=window.BACKEND_URL||'http://localhost:3001';
+      const res=await fetch(`${BACKEND}/api/analyze`,{method:'POST',body:fd});
+      clearInterval(timer);
+
+      const json=await res.json();
+      if(!res.ok||!json.success)throw new Error(json.error||'Analysis failed');
+      setResult(json.data);setPhase(5);
+    }catch(e){setError(e.message);}
+    finally{setLoading(false);}
+  };
+
+  const PHASE_LABELS=['','Phase 1: Parsing + building skill graph...','Phase 2: PASE-ADV + TSDMV-ECO...','Phase 3: SCIS-CL + Markov career model...','Phase 4: CSRRE-EVO reconstruction...'];
+  const activePhase=loading?phase:result?5:0;
+
+  return(
+    <div>
+      <nav>
+        <div>
+          <div className="logo">ResuAI <em>Pro</em> <span style={{fontSize:12,fontFamily:'JetBrains Mono,monospace',fontWeight:400,color:'var(--text3)'}}>v3</span></div>
+          <div className="logo-sub">PCAM — Predictive Cooperative Agent Mesh</div>
+        </div>
+        <div className="nav-chips">
+          <span className="chip green pulse">Gemini 2.5 Flash</span>
+          <span className="chip">PCAM-3.0</span>
+          <span className="chip">PASE-ADV</span>
+          <span className="chip">TSDMV-ECO</span>
+          <span className="chip">SCIS-CL</span>
+          <span className="chip">MCTE</span>
+          <span className="chip">CSRRE-EVO</span>
+        </div>
+      </nav>
+
+      <div className="workspace">
+        <div className="left">
+          <div>
+            <div className="sec-label">Resume</div>
+            <div className={`upload-zone ${drag?'drag':''}`}
+              onDragOver={e=>{e.preventDefault();setDrag(true);}}
+              onDragLeave={()=>setDrag(false)}
+              onDrop={e=>{e.preventDefault();setDrag(false);handleFile(e.dataTransfer.files[0]);}}>
+              <input type="file" accept=".pdf,.doc,.docx,.txt" ref={fileRef} onChange={e=>handleFile(e.target.files[0])}/>
+              <div style={{fontSize:22,marginBottom:7,opacity:.5}}>📄</div>
+              <div className="upload-txt">Drop file or <strong>browse</strong><br/>PDF · DOC · DOCX · TXT · max 10MB</div>
+            </div>
+            {file&&(
+              <div className="file-ok">
+                <span>📎</span>
+                <span className="file-ok-name">{file.name}</span>
+                <button className="rm-btn" onClick={()=>setFile(null)}>✕</button>
+              </div>
+            )}
+            <div className="or-div" style={{margin:'10px 0'}}>or paste text</div>
+            <textarea rows={7} placeholder="Paste resume text here..." value={resumeText}
+              onChange={e=>{setResumeText(e.target.value);setFile(null);}}/>
+          </div>
+
+          <div>
+            <div className="sec-label">Job Description</div>
+            <span className="field-lbl" style={{marginBottom:5}}>Optional — enables precise PASE-ADV ATS simulation</span>
+            <textarea rows={4} placeholder="Paste target job description..." value={jobDesc} onChange={e=>setJobDesc(e.target.value)}/>
+          </div>
+
+          <div>
+            <div className="sec-label">API Key</div>
+            <div className="api-wrap">
+              <input type={showKey?'text':'password'} placeholder="AIzaSy..." value={apiKey} onChange={e=>setApiKey(e.target.value)}/>
+              <button className="api-tog" onClick={()=>setShowKey(!showKey)}>{showKey?'HIDE':'SHOW'}</button>
+            </div>
+            <div className="api-hint">Free key at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> · never stored</div>
+          </div>
+
+          {error&&<div className="err">⚠ {error}</div>}
+
+          <button className="run-btn" onClick={handleAnalyze} disabled={loading}>
+            {loading?'⟳ Analyzing...':'✦ Run PCAM Analysis'}
+          </button>
+
+          <PCAMPipeline phase={activePhase}/>
+        </div>
+
+        <div className="right">
+          {loading&&(
+            <div className="loading">
+              <div className="loading-ring"/>
+              <div className="loading-h">PCAM Running</div>
+              <div className="loading-sub">Predictive gate evaluating tasks · Batching API calls</div>
+              <div className="phases">
+                {[1,2,3,4].map(p=>(
+                  <div key={p} className="phase-row">
+                    <div className={`pdot ${phase>p?'done':phase===p?'active':''}`}/>
+                    {PHASE_LABELS[p]}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {!loading&&!result&&(
+            <div className="welcome">
+              <div className="welcome-glyph">✦</div>
+              <div className="welcome-h">PCAM Intelligence Platform</div>
+              <div className="welcome-p">6 novel agents · Predictive API gate · TSDMV-ECO skill decay · Adversarial ATS simulation · Markov career modeling · Evolutionary reconstruction</div>
+              <div className="welcome-steps">
+                {[['1','Upload resume or paste text'],['2','Add job description (optional)'],['3','Enter Gemini API key'],['4','Click Analyze']].map(([n,t])=>(
+                  <div key={n} className="ws"><div className="ws-num">{n}</div><div className="ws-txt">{t}</div></div>
+                ))}
+              </div>
+            </div>
+          )}
+          {!loading&&result&&<ResultsDashboard data={result}/>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
